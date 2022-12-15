@@ -19,15 +19,13 @@ type FilmRecord struct {
 	Summary             string
 }
 
-const datasource = "postgres://netflix:netflix@localhost:5432/netflix"
-
 const selectByIdQuery = "select id, title, genre, tags, languages, type, score, country_availability, summary from film where id = $1"
 const selectByGenreAndScoreHigherThanOrderByScoreDesc = "select id, title, genre, tags, languages, type, score, country_availability, " +
 	"summary from film where genre like $1 and score >= $2 order by score desc"
 
 var db *sql.DB
 
-func InitDatabase() {
+func InitDatabase(datasource string) {
 	database, err := sql.Open("postgres", datasource)
 
 	if err != nil {

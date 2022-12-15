@@ -5,10 +5,11 @@ import (
 	"go-netflix-microservice/datasource"
 	"go-netflix-microservice/film"
 	"go-netflix-microservice/ping"
+	"os"
 )
 
 func main() {
-	datasource.InitDatabase()
+	datasource.InitDatabase(os.Args[1])
 
 	router := gin.Default()
 	router.GET("/ping", ping.Ping)
