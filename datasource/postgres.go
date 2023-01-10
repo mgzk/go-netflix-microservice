@@ -23,19 +23,18 @@ const selectByIdQuery = "select id, title, genre, tags, languages, type, score, 
 const selectByGenreAndScoreHigherThanOrderByScoreDesc = "select id, title, genre, tags, languages, type, score, country_availability, " +
 	"summary from film where genre like $1 and score >= $2 order by score desc"
 
-var db *sql.DB
-
-func InitDatabase(datasource string) {
-	database, err := sql.Open("postgres", datasource)
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	db = database
+type Store interface {
+	FindById(id string) *FilmRecord
+	FindByGenreAndScoreHigherThan(genre string, score float32) *[]FilmRecord
 }
 
-func FindById(id string) *FilmRecord {
+var DbStore Store
+
+type DatabaseStore struct {
+	Db *sql.DB
+}
+
+func (store DatabaseStore) FindById(id string) *FilmRecord {
 	idInt, err := strconv.Atoi(id)
 
 	if err != nil {
@@ -43,7 +42,7 @@ func FindById(id string) *FilmRecord {
 		return nil
 	}
 
-	row := db.QueryRow(selectByIdQuery, idInt)
+	row := store.Db.QueryRow(selectByIdQuery, idInt)
 
 	var record FilmRecord
 	if err := row.Scan(
@@ -63,8 +62,8 @@ func FindById(id string) *FilmRecord {
 	return &record
 }
 
-func FindByGenreAndScoreHigherThan(genre string, score float32) *[]FilmRecord {
-	rows, err := db.Query(selectByGenreAndScoreHigherThanOrderByScoreDesc, "%" + genre + "%", score)
+func (store DatabaseStore) FindByGenreAndScoreHigherThan(genre string, score float32) *[]FilmRecord {
+	rows, err := store.Db.Query(selectByGenreAndScoreHigherThanOrderByScoreDesc, "%"+genre+"%", score)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -91,4 +90,16 @@ func FindByGenreAndScoreHigherThan(genre string, score float32) *[]FilmRecord {
 	}
 
 	return &records
+}
+
+func InitDatabaseStore(datasource string) {
+	database, err := sql.Open("postgres", datasource)
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	DbStore = DatabaseStore{
+		Db: database,
+	}
 }

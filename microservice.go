@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	datasource.InitDatabase(os.Args[1])
+	datasource.InitDatabaseStore(os.Args[1])
 
 	router := gin.Default()
 	router.GET("/ping", ping.Ping)

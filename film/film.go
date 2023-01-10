@@ -3,7 +3,6 @@ package film
 import (
 	"github.com/gin-gonic/gin"
 	"go-netflix-microservice/datasource"
-	"log"
 	"net/http"
 )
 
@@ -33,7 +32,7 @@ const id = "id"
 func FindById(c *gin.Context) {
 	id := c.Param(id)
 
-	record := datasource.FindById(id)
+	record := datasource.DbStore.FindById(id)
 
 	if record == nil {
 		c.Status(http.StatusNotFound)
@@ -48,10 +47,11 @@ func Find(c *gin.Context) {
 	err := c.BindQuery(&filter)
 
 	if err != nil {
-		log.Println(err.Error())
+		c.Status(http.StatusBadRequest)
+		return
 	}
 
-	records := datasource.FindByGenreAndScoreHigherThan(filter.Genre, filter.ScoreFrom)
+	records := datasource.DbStore.FindByGenreAndScoreHigherThan(filter.Genre, filter.ScoreFrom)
 
 	if records == nil {
 		c.Status(http.StatusNotFound)
